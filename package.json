@@ -1,6 +1,7 @@
 {
   "name": "canvas-vite",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "initial setup for using html canvas under vite.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

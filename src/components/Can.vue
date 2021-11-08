@@ -3,20 +3,17 @@ import { ref, onUpdated, onMounted } from 'vue'
 import Sketch from 'sketch-js'
 
 let myCanvas = ref(null)
+let m = myCanvas.value;
 
-let w = myCanvas.value.width;
-let h = myCanvas.value.height;
-
-let balloons = () => {
+function balloons() {
 
 // General Variables
 let particles = [];
 
-let sketch = Sketch.create();
-sketch.container = myCanvas;
-
-sketch.width = w;
-sketch.height = h;
+let sketch = Sketch.create({
+  container: m,
+  retina: 'auto'
+});
 
 sketch.mouse.x = sketch.width / 2;
 sketch.mouse.y = sketch.height / 2;
@@ -86,7 +83,7 @@ Particle.prototype = {
 };
 
 // Create Particles
-let z = 150;
+let z = 100;
 while (z--) particles.push(new Particle());
 
 // Sketch Clear
@@ -129,6 +126,6 @@ onUpdated(() => balloons())
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%)
+    transform: translate(-50%, -50%);
   }
 </style>

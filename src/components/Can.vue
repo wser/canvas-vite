@@ -1,21 +1,22 @@
 <script setup>
 function CanvasManager(w, h) {
-  this.w = w;
-  this.h = h;
-  this.ctx = null;
+  let t = this;
+  t.w = w;
+  t.h = h;
+  t.ctx = null;
   
-  this.setContext = function(ctx) {
-  	this.ctx = ctx;
+  t.setContext = function(ctx) {
+    t.ctx = ctx;
   }
-  this.setSize = function(size) {
-  	this.w += size.w;
-    this.h += size.h;
+  t.setSize = function(size) {
+    t.w += size.w;
+    t.h += size.h;
   }
-  this.drawGrid = function() {
-  	const ctx = this.ctx;
+  t.drawGrid = function() {
+    const ctx = t.ctx;
 		ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.lineTo(this.w, this.h);
+    ctx.lineTo(t.w, t.h);
     ctx.stroke();
   }
 }

@@ -21,7 +21,7 @@ function CanvasManager(w, h) {
 }
 
 /***** APP *****/
-import {  ref, reactive, computed, watch, onUpdated, onMounted } from 'Vue'
+import {  ref, reactive, computed, watch, onUpdated, onMounted } from 'vue'
 
 
 

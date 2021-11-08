@@ -1,4 +1,4 @@
-<script setup>import Game from './components/Game.vue'</script>
+<script setup>import Can from './components/Can.vue'</script>
 
-<template><Game msg="Hello Vue 3 + Vite" /></template>
+<template><Can msg="Hello Vue 3 + Vite" /></template>
 

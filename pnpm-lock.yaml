@@ -2,10 +2,12 @@ lockfileVersion: 5.3
 
 specifiers:
   '@vitejs/plugin-vue': ^1.9.4
+  sketch-js: 1.1.3
   vite: ^2.6.13
   vue: ^3.2.16
 
 dependencies:
+  sketch-js: 1.1.3
   vue: 3.2.21
 
 devDependencies:
@@ -345,6 +347,10 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
+
+  /sketch-js/1.1.3:
+    resolution: {integrity: sha1-ymkjUTFfQXslvp+oJoZvVoJ62F4=}
+    dev: false
 
   /source-map-js/0.6.2:
     resolution: {integrity: sha512-/3GptzWzu0+0MBQFrDKzw/DvvMTUORvgY6k6jd/VS6iCR4RDTKWH6v6WPwQoUO8667uQEf9Oe38DxAYWY5F/Ug==}

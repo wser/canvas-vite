@@ -1,72 +1,145 @@
 <script setup>
-function CanvasManager(w, h) {
-  let t = this;
-  t.w = w;
-  t.h = h;
-  t.ctx = null;
-  
-  t.setContext = function(ctx) {
-    t.ctx = ctx;
-  }
-  t.setSize = function(size) {
-    t.w += size.w;
-    t.h += size.h;
-  }
-  t.drawGrid = function() {
-    const ctx = t.ctx;
-		ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(t.w, t.h);
-    ctx.stroke();
-  }
-}
-
-/***** APP *****/
-import {  ref, reactive, computed, watch, onUpdated, onMounted } from 'vue'
-
-
+import { ref, onUpdated, onMounted } from 'vue'
+import Sketch from 'sketch-js'
 
 let myCanvas = ref(null)
-let size = reactive({
-  w: 200,
-  h: 200
-})
 
-let manager = new CanvasManager(size.w, size.h)
-
-function grow() {
-  size.w += 10
-  size.h += 10
-  manager.setSize(size)
+let setCanvas = function(w, h, t = this) {
+  t.w = innerWidth
+  t.h = innerHeight
+  t.ctx = null
+  
+  t.setContext = function(ctx) {
+    t.ctx = ctx
+  }
 }
 
-function draw() {
-  manager.drawGrid(4, 4, 1, 'black')
+
+let size = { w: 200, h: 400 }
+
+let nrg = new setCanvas(size.w, size.h)
+
+function parts(){
+
+// General Variables
+let particles = [];
+
+let sketch = Sketch.create();
+sketch.mouse.x = sketch.width / 2;
+sketch.mouse.y = sketch.height / 2;
+sketch.strokeStyle = 'hsla(200, 50%, 50%, .4)';
+sketch.globalCompositeOperation = 'lighter'; //'luminosity';
+
+// Particle Constructor
+let Particle = function () {
+  this.x = random(sketch.width);
+  this.y = random(sketch.height, sketch.height * 2);
+  this.vx = 0;
+  this.vy = -random(1, 10) / 5;
+  this.radius = this.baseRadius = 1;
+  this.maxRadius = 50;
+  this.threshold = 150;
+  this.hue = random(180, 240);
+};
+
+// Particle Prototype
+Particle.prototype = {
+  update: function () {
+    var dist, distx, disty, radius;
+    // Determine Distance From Mouse
+    distx = this.x - sketch.mouse.x;
+    disty = this.y - sketch.mouse.y;
+    dist = sqrt(distx * distx + disty * disty);
+
+    // Set Radius
+    if (dist < this.threshold) {
+      radius =
+        this.baseRadius +
+        ((this.threshold - dist) / this.threshold) * this.maxRadius;
+      this.radius = radius > this.maxRadius ? this.maxRadius : radius;
+    } else {
+      this.radius = this.baseRadius;
+    }
+
+    // Adjust Velocity
+    this.vx += (random(100) - 50) / 1e3;
+    this.vy -= random(1, 20) / 1e4;
+
+    // Apply Velocity
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Check Bounds
+    if (
+      this.x < -this.maxRadius ||
+      this.x > sketch.width + this.maxRadius ||
+      this.y < -this.maxRadius
+    ) {
+      this.x = random(sketch.width);
+      this.y = random(sketch.height + this.maxRadius, sketch.height * 2);
+      this.vx = 0;
+      this.vy = -random(1, 10) / 5;
+    }
+  },
+  render: function () {
+    sketch.beginPath();
+    sketch.arc(this.x, this.y, this.radius, 0, TWO_PI);
+    sketch.closePath();
+    // sketch.fillStyle = 'hsla(' + this.hue + ', 60%, 40%, .35)';
+    // sketch.fill();
+    sketch.stroke();
+  },
+};
+
+// Create Particles
+let z = 500;
+while (z--) particles.push(new Particle());
+
+// Sketch Clear
+sketch.clear = () => sketch.clearRect(0, 0, sketch.width, sketch.height);
+
+// Sketch Update
+sketch.update = function () {
+  let i = particles.length;
+  let results = [];
+  while (i--) results.push(particles[i].update());
+  return results;
+};
+
+// Sketch Draw
+sketch.draw = function () {
+  let i = particles.length;
+  let results = [];
+  while (i--) results.push(particles[i].render());
+  return results;
+};
+
 }
 
-onMounted(() => {
-  manager.setContext(myCanvas.value.getContext('2d'))
-  draw()
-})
+
+let draw = () => {
+  nrg.setContext(myCanvas.value.getContext('2d'))
+}
+
+onMounted(() => parts())
 
 onUpdated(() => draw())
 
 </script>
 
 
-
-
 <template>
-
-
-<button @click="grow">Grow</button>
-  <br><br>
-  <div class="board">
-    <canvas ref='myCanvas' :width="size.w" :height="size.h" tabindex='0' 
-            style="border:1px solid #000000;"
-            ></canvas>
-  </div>
-
+  <canvas ref='myCanvas' id='canvas1'></canvas>
 </template>
 
-<style scoped></style>
+<style scoped>
+#canvas1{
+    width: 95vw; 
+    height: 94vh; 
+    border: 1px solid green;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%)
+  }
+</style>

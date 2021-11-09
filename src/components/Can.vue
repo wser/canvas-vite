@@ -2,6 +2,8 @@
 /** @type {HTMLCanvasElement} */
 import { ref, reactive, computed, watch, onUpdated, onMounted } from 'vue'
 
+import Sketch from 'sketch-js'
+
 let canvasRef = ref(null)
 
 let size = { w: 350, h: 550 }
@@ -23,162 +25,131 @@ let drawLine = (w, h, ctx) => {
   ctx.stroke();    
 }
 
-// let draw = () => {
-//   canv.setContext(canvasRef.value.getContext('2d'))
-//   drawLine(size.w, size.h, canv.ctx)
-// }
-
-
-/**
- * @namespace Core namespace
- */ 
- var CANVASBALLOON = {};
-
-// Constants
-CANVASBALLOON.KAPPA = (4 * (Math.sqrt(2) - 1))/3;
-CANVASBALLOON.WIDTH_FACTOR = 0.0333;
-CANVASBALLOON.HEIGHT_FACTOR = 0.4;
-CANVASBALLOON.TIE_WIDTH_FACTOR = 0.12;
-CANVASBALLOON.TIE_HEIGHT_FACTOR = 0.10;
-CANVASBALLOON.TIE_CURVE_FACTOR = 0.13;
-CANVASBALLOON.GRADIENT_FACTOR = 0.3;
-CANVASBALLOON.GRADIENT_CIRCLE_RADIUS = 3;
-
-/**
- * Creates a new Balloon
- * @class	Represents a balloon displayed on a HTML5 canvas
- * @param	{String}	canvasElementID		Unique ID of the canvas element displaying the balloon
- * @param	{Number}	centerX				X-coordinate of the balloon's center
- * @param	{Number}	centerY				Y-coordinate of the balloon's center
- * @param	{Number}	radius				Radius of the balloon
- * @param	{String}	color				String representing the balloon's base color
- */
-CANVASBALLOON.Balloon = function(centerX, centerY, radius, color) {
-	var canvas = canv;
-	
-	if(!canvas.getContext){ return;	}
-	
-	this.gfxContext = canvas.setContext(canvasRef.value.getContext('2d'));
-	this.centerX = centerX;
-	this.centerY = centerY;
-	this.radius = radius;
-	this.baseColor = new Color(color);
-	this.darkColor = (new Color(color)).darken(CANVASBALLOON.GRADIENT_FACTOR);
-	this.lightColor = (new Color(color)).lighten(CANVASBALLOON.GRADIENT_FACTOR);
+let draw = () => {
+  canv.setContext(canvasRef.value.getContext('2d'))
+  drawLine(size.w, size.h, canv.ctx)
 }
 
-/**
- * Draws the balloon on the canvas
- */
-CANVASBALLOON.Balloon.prototype.draw = function() {
 
-	// Prepare constants
-	
-	var gfxContext = this.gfxContext;
-	var centerX = this.centerX;
-	var centerY = this.centerY;
-	var radius = this.radius;
-	
-	var handleLength = CANVASBALLOON.KAPPA * radius;
-	
-	var widthDiff = (radius * CANVASBALLOON.WIDTH_FACTOR);
-	var heightDiff = (radius * CANVASBALLOON.HEIGHT_FACTOR);
-	
-	var balloonBottomY = centerY + radius + heightDiff;
-	
-	// Begin balloon path
-	
-	gfxContext.beginPath();
+var Balloon, balloons, options, sketch, sortBySize;
+        
+sketch = Sketch.create();
 
-	// Top Left Curve
-	
-	var topLeftCurveStartX = centerX - radius;
-	var topLeftCurveStartY = centerY;
-	
-	var topLeftCurveEndX = centerX;
-	var topLeftCurveEndY = centerY - radius;
-	
-	gfxContext.moveTo(topLeftCurveStartX, topLeftCurveStartY);
-	gfxContext.bezierCurveTo(topLeftCurveStartX, topLeftCurveStartY - handleLength - widthDiff,
-							topLeftCurveEndX - handleLength, topLeftCurveEndY,
-							topLeftCurveEndX, topLeftCurveEndY);
-							
-	// Top Right Curve
-	
-	var topRightCurveStartX = centerX;
-	var topRightCurveStartY = centerY - radius;
-	
-	var topRightCurveEndX = centerX + radius;
-	var topRightCurveEndY = centerY;
-	
-	gfxContext.bezierCurveTo(topRightCurveStartX + handleLength + widthDiff, topRightCurveStartY,
-							topRightCurveEndX, topRightCurveEndY - handleLength,
-							topRightCurveEndX, topRightCurveEndY);
-										
-	// Bottom Right Curve
-	
-	var bottomRightCurveStartX = centerX + radius;
-	var bottomRightCurveStartY = centerY;
-	
-	var bottomRightCurveEndX = centerX;
-	var bottomRightCurveEndY = balloonBottomY;
-	
-	gfxContext.bezierCurveTo(bottomRightCurveStartX, bottomRightCurveStartY + handleLength,
-							bottomRightCurveEndX + handleLength, bottomRightCurveEndY,
-							bottomRightCurveEndX, bottomRightCurveEndY);							
-	
-	// Bottom Left Curve
-	
-	var bottomLeftCurveStartX = centerX;
-	var bottomLeftCurveStartY = balloonBottomY;
-	
-	var bottomLeftCurveEndX = centerX - radius;
-	var bottomLeftCurveEndY = centerY;
-	
-	gfxContext.bezierCurveTo(bottomLeftCurveStartX - handleLength, bottomLeftCurveStartY,
-							bottomLeftCurveEndX, bottomLeftCurveEndY + handleLength,
-							bottomLeftCurveEndX, bottomLeftCurveEndY);
-	
-	// Create balloon gradient
-	
-	var gradientOffset = (radius/3);
-	
-	var balloonGradient =
-		gfxContext.createRadialGradient(centerX + gradientOffset, centerY - gradientOffset,
-										CANVASBALLOON.GRADIENT_CIRCLE_RADIUS,
-										centerX, centerY, radius + heightDiff);
-	balloonGradient.addColorStop(0, this.lightColor.rgbString());
-	balloonGradient.addColorStop(0.7, this.darkColor.rgbString());
-	
-	gfxContext.fillStyle = balloonGradient;
-	gfxContext.fill();
-	
-	// End balloon path
-	
-	// Create balloon tie
-	
-	var halfTieWidth = (radius * CANVASBALLOON.TIE_WIDTH_FACTOR)/2;
-	var tieHeight = (radius * CANVASBALLOON.TIE_HEIGHT_FACTOR);
-	var tieCurveHeight = (radius * CANVASBALLOON.TIE_CURVE_FACTOR);
-	
-	gfxContext.beginPath();
-	gfxContext.moveTo(centerX - 1, balloonBottomY);
-	gfxContext.lineTo(centerX - halfTieWidth, balloonBottomY + tieHeight);
-	gfxContext.quadraticCurveTo(centerX, balloonBottomY + tieCurveHeight,
-								centerX + halfTieWidth, balloonBottomY + tieHeight);
-	gfxContext.lineTo(centerX + 1, balloonBottomY);
-	gfxContext.fill();
-}
+balloons = [];
 
-var balloon1 = new CANVASBALLOON.Balloon(size.w, size.h, 50, 'rgb(229, 45, 45)');
-	
+options = {
+    amount: 5,
+    sizeMin: 1,
+    sizeMax: 10
+};
+
+sortBySize = function(a, b) {
+    if (a.size < b.size) {
+        return 1;
+    }
+    if (a.size > b.size) {
+        return -1;
+    }
+    return 0;
+};
+
+Balloon = function(config) {
+    this.x = config.x;
+    this.y = config.y;
+    this.vx = 0;
+    this.vy = 0;
+    return this.size = config.size;
+};
+
+Balloon.prototype.update = function() {
+    var dt;
+    dt = sketch.dt <= 0 ? .001 : sketch.dt / 16;
+    this.vx += this.size * (random(-1, 1) / 1000);
+    this.x += this.vx * dt;
+    this.vy -= this.size / 2000;
+    this.y += this.vy * dt;
+    if (this.y <= this.size * -0.9) {
+        this.size = random(options.sizeMin, options.sizeMax);
+        this.x = random(sketch.width);
+        this.vx = 0;
+        this.y = sketch.height + (this.size * 10.2);
+        return this.vy = 0;
+    }
+};
+
+Balloon.prototype.render = function() {
+    sketch.save();
+    sketch.translate(this.x, this.y);
+    sketch.beginPath();
+    sketch.moveTo(this.size * -0.5, 0);
+    sketch.bezierCurveTo(this.size * -5, this.size * -1, this.size * -6, this.size * -10, 0, this.size * -10);
+    sketch.bezierCurveTo(this.size * 6, this.size * -10, this.size * 5, this.size * -1, this.size * 0.5, 0);
+    sketch.lineTo(this.size * 0.8, this.size * 0.7);
+    sketch.lineTo(this.size * -0.8, this.size * 0.7);
+    sketch.closePath();
+    sketch.fillStyle = 'hsla( 0, 0%, ' + (0 + ((this.size / options.sizeMax) * 100)) + '%, .35 )';
+    sketch.fill();
+    sketch.lineWidth = this.size * 0.4;
+    sketch.stroke();
+    sketch.restore();
+    sketch.save();
+    sketch.translate(this.x - (this.size * 1.75), this.y - (this.size * 7.5));
+    sketch.rotate(PI / 4);
+    sketch.scale(1, 2);
+    sketch.beginPath();
+    sketch.arc(0, 0, this.size * 0.5, 0, TWO_PI);
+    sketch.fillStyle = 'hsla( 0, 0%, 100%, .8 )';
+    sketch.fill();
+    return sketch.restore();
+};
+
+sketch.setup = function() {
+    var i, _results;
+    sketch.lineJoin = 'round';
+    sketch.strokeStyle = 'hsla( 0, 0%, 100%, .75 )';
+    i = options.amount;
+    _results = [];
+    while (i--) {
+        _results.push(balloons.push(new Balloon({
+            x: random(sketch.width),
+            y: random(sketch.height),
+            size: random(options.sizeMin, options.sizeMax)
+        })));
+    }
+    return _results;
+};
+
+sketch.clear = function() {
+    return sketch.clearRect(0, 0, sketch.width, sketch.height);
+};
+
+sketch.update = function() {
+    var i, _results;
+    balloons.sort(sortBySize);
+    i = balloons.length;
+    _results = [];
+    while (i--) {
+        _results.push(balloons[i].update(i));
+    }
+    return _results;
+};
+
+sketch.draw = function() {
+    var i, _results;
+    i = balloons.length;
+    _results = [];
+    while (i--) {
+        _results.push(balloons[i].render(i));
+    }
+    return _results;
+};
 
 
 
 
-onMounted(() => balloon1.draw())
+// onMounted(() => draw())
 
-onUpdated(() => balloon1.draw())
+// onUpdated(() => draw())
 
 </script>
 

@@ -1,52 +1,34 @@
 <script setup>
-function CanvasManager(w, h) {
-  this.w = w;
-  this.h = h;
-  this.ctx = null;
-  
-  this.setContext = function(ctx) {
-  	this.ctx = ctx;
-  }
-  this.setSize = function(size) {
-  	this.w += size.w;
-    this.h += size.h;
-  }
-  this.drawGrid = function() {
-  	const ctx = this.ctx;
-		ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(this.w, this.h);
-    ctx.stroke();
-  }
+/** @type {HTMLCanvasElement} */
+import { ref, reactive, computed, watch, onUpdated, onMounted } from 'vue'
+
+let canvasRef = ref(null)
+
+let size = { w: 350, h: 550 }
+
+let setCanvas = function() {  
+  this.w = size.w;
+  this.h = size.h;
+  this.ctx = null;  
+  this.setContext = ctx => this.ctx = ctx;  
 }
 
-/***** APP *****/
-import {  ref, reactive, computed, watch, onUpdated, onMounted } from 'vue'
+let canv = new setCanvas()
 
-
-
-let myCanvas = ref(null)
-let size = reactive({
-  w: 200,
-  h: 200
-})
-
-let manager = new CanvasManager(size.w, size.h)
-
-function grow() {
-  size.w += 10
-  size.h += 10
-  manager.setSize(size)
+let drawLine = (w, h, ctx) => {
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(w, h);
+  ctx.closePath();
+  ctx.stroke();    
 }
 
-function draw() {
-  manager.drawGrid(4, 4, 1, 'black')
+let draw = () => {
+  canv.setContext(canvasRef.value.getContext('2d'))
+  drawLine(size.w, size.h, canv.ctx)
 }
 
-onMounted(() => {
-  manager.setContext(myCanvas.value.getContext('2d'))
-  draw()
-})
+onMounted(() => draw())
 
 onUpdated(() => draw())
 
@@ -54,22 +36,19 @@ onUpdated(() => draw())
 
 <template>
   <canvas 
-    ref='myCanvas' 
+    ref='canvasRef' 
     id='canvas1' 
     :width="size.w" 
     :height="size.h" 
     style="border:1px solid #000000;"
   ></canvas>
-  </template>
+</template>
 
 <style scoped>
-/* #canvas1 {
-    width: 90vw; 
-    height: 90vh; 
-    border: 1px solid green;
+#canvas1 {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-  } */
+  }
 </style>
